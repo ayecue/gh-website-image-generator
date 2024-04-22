@@ -1,0 +1,13 @@
+src
+node_modules
+tsconfig.json
+.circleci
+tests
+test.js
+bundled.js
+test.html
+fonts
+.DS_Store
+image.src
+assets
+build
