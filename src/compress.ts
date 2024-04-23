@@ -1,17 +1,17 @@
 export const OptimizedCodes = {
-  White: String.fromCharCode(60),
-  Black: String.fromCharCode(61),
-  Invisible: String.fromCharCode(62)
+  White: String.fromCharCode(33),
+  Black: String.fromCharCode(35),
+  Invisible: String.fromCharCode(37)
 } as const;
 
-export const DEFAULT_ALPHA = '0FF';
+export const DEFAULT_ALPHA = 'FF';
 
 export function compress(hex: string): string {
   hex = hex.slice(1);
   if (hex.length < 6)
     throw new Error('Hex value cannot be less than 6 characters');
 
-  const segments = [hex.slice(0, 3), hex.slice(3, 6)];
+  const segments = [hex.slice(0, 2), hex.slice(2, 4), hex.slice(4, 6)];
 
   if (hex.length === 6) {
     segments.push(DEFAULT_ALPHA);

@@ -49,7 +49,7 @@ export async function process({
   withoutAlpha = false
 }: ProcessOptions) {
   const resizedImage = await image.resize(width, height);
-  const output = await generateImageData(image, withoutAlpha);
+  const output = await generateImageData(resizedImage, withoutAlpha);
 
   return {
     image: resizedImage,

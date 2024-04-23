@@ -41,7 +41,7 @@ export function coreWebsiteFactory(
   }"></canvas>
   <script>
     (function renderImage(data) {
-      const IMAGE_WIDTH = ${height};
+      const IMAGE_WIDTH = ${width};
       const PIXEL_SCALE = ${scale};
       const CHARACTERS = "0123456789abcdef";
 
@@ -52,22 +52,17 @@ export function coreWebsiteFactory(
         let out = "";
         for (let i = 0; i < segment.length; i++) {
           const item = segment[i];
-          let val = item.charCodeAt(0) - 100;
-          let temp = "";
-          for (let j = 0; j < 3; j++) {
-            temp = CHARACTERS[val % 16] + temp;
-            val = Math.floor(val / 16);
-          }
-          out = out + temp;
+          const val = item.charCodeAt(0) - 100;
+          out += val.toString(16);
         }
         return out;
       }
       function next(i) {
-        const decompressed = decompress(data.slice(i, i + 3));
-        const r = decompressed[0] + decompressed[1]
-        const g = decompressed[2] + decompressed[3]
-        const b = decompressed[4] + decompressed[5]
-        const a = decompressed[7] + decompressed[8]
+        const decompressed = decompress(data.slice(i, i + 4));
+        const r = decompressed[0] + decompressed[1];
+        const g = decompressed[2] + decompressed[3];
+        const b = decompressed[4] + decompressed[5];
+        const a = decompressed[6] + decompressed[7];
         return '#' + r + g + b + a;
       }
       function draw() {
@@ -86,7 +81,7 @@ export function coreWebsiteFactory(
             code = '#00000000';
           } else {
             code = next(pointer);
-            pointer += 2;
+            pointer += 3;
           }
           pointer++;
 

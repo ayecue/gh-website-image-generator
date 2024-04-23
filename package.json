@@ -1,6 +1,6 @@
 {
     "name": "gh-website-image-generator",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Generate GreyHack website with image",
     "homepage": "https://github.com/ayecue/gh-website-image-generator",
     "main": "dist/index",
@@ -76,6 +76,6 @@
     "dependencies": {
         "commander": "^11.1.0",
         "imagescript": "^1.2.18",
-        "jimp": "^0.22.10"
+        "jimp": "^0.22.12"
     }
 }
