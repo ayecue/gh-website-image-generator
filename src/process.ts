@@ -17,19 +17,27 @@ async function generateImageData(
     const alpha = rgba[3];
     const hasNoAlpha = withoutAlpha || alpha === 255;
     let hex;
+    let code;
 
     if (hasNoAlpha) {
       hex = rgbToHex(red, green, blue);
-      if (hex === '#000000') hex = OptimizedCodes.Black;
-      else if (hex === '#FFFFFF') hex = OptimizedCodes.White;
-      else hex = compress(hex);
+      if (hex === '#000000') {
+        code = OptimizedCodes.Black;
+      } else if (hex === '#FFFFFF') {
+        code = OptimizedCodes.White;
+      } else {
+        code = compress(hex);
+      }
     } else {
       hex = rgbToHexWithAlpha(red, green, blue, alpha);
-      if (alpha === 0) hex = OptimizedCodes.Invisible;
-      else hex = compress(hex);
+      if (alpha === 0) {
+        code = OptimizedCodes.Invisible;
+      } else {
+        code = compress(hex);
+      }
     }
 
-    output.push(hex);
+    output.push(code);
   });
 
   return output.join('');

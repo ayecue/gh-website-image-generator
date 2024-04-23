@@ -26,6 +26,7 @@ export async function transform({ filepath, ...options }: TransformOptions) {
 
   return [
     '<!DOCTYPE html>',
+    '<meta charset="UTF-8">',
     `<script>var DATA="${result.data}";</script>`,
     coreWebsiteFactory(result.image.height, result.image.width, options.scale)
   ].join('\n');

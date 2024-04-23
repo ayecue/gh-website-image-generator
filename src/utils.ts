@@ -52,17 +52,22 @@ export function coreWebsiteFactory(
         let out = "";
         for (let i = 0; i < segment.length; i++) {
           const item = segment[i];
-          const val = item.charCodeAt(0) - 100;
-          out += val.toString(16);
+          let val = item.charCodeAt(0) - 100;
+          let temp = "";
+          for (let j = 0; j < 3; j++) {
+            temp = CHARACTERS[val % 16] + temp;
+            val = Math.floor(val / 16);
+          }
+          out = out + temp;
         }
         return out;
       }
       function next(i) {
-        const decompressed = decompress(data.slice(i, i + 4));
+        const decompressed = decompress(data.slice(i, i + 3));
         const r = decompressed[0] + decompressed[1];
         const g = decompressed[2] + decompressed[3];
         const b = decompressed[4] + decompressed[5];
-        const a = decompressed[6] + decompressed[7];
+        const a = decompressed[7] + decompressed[8];
         return '#' + r + g + b + a;
       }
       function draw() {
@@ -73,6 +78,10 @@ export function coreWebsiteFactory(
         while (pointer < max) {
           let charVal = data[pointer];
           let code = '';
+
+          const x = index % IMAGE_WIDTH;
+          const y = Math.floor(index / IMAGE_WIDTH);
+
           if (charVal === "${OptimizedCodes.White}") {
             code = '#FFFFFF';
           } else if (charVal === "${OptimizedCodes.Black}") {
@@ -81,12 +90,9 @@ export function coreWebsiteFactory(
             code = '#00000000';
           } else {
             code = next(pointer);
-            pointer += 3;
+            pointer += 2;
           }
           pointer++;
-
-          const x = index % IMAGE_WIDTH;
-          const y = Math.floor(index / IMAGE_WIDTH);
 
           ctx.fillStyle = code;
           ctx.fillRect(x * PIXEL_SCALE, y * PIXEL_SCALE, PIXEL_SCALE, PIXEL_SCALE);
