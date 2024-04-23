@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { decode, Image } from 'imagescript';
 import Jimp from 'jimp';
 
+import { CompressionMode } from './compress';
 import {
   AnimatedImageContainer,
   StaticImageContainer
@@ -15,6 +16,7 @@ export interface TransformOptions {
   height: number;
   scale?: number;
   withoutAlpha?: boolean;
+  compressionMode?: CompressionMode;
 }
 
 export async function transform({ filepath, ...options }: TransformOptions) {
@@ -28,6 +30,11 @@ export async function transform({ filepath, ...options }: TransformOptions) {
     '<!DOCTYPE html>',
     '<meta charset="UTF-8">',
     `<script>var DATA="${result.data}";</script>`,
-    coreWebsiteFactory(result.image.height, result.image.width, options.scale)
+    coreWebsiteFactory(
+      result.image.height,
+      result.image.width,
+      options.scale,
+      options.compressionMode
+    )
   ].join('\n');
 }

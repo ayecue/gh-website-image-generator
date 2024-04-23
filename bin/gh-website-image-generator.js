@@ -26,7 +26,8 @@ program
   })
   .option('-s, --scale <number>', 'scale of output')
   .option('-o, --output-directory <outputDirectory>', 'output directory')
-  .option('-wa, --without-alpha', 'ignore alpha channel');
+  .option('-wa, --without-alpha', 'ignore alpha channel')
+  .option('-cm, --compression-mode <number>', 'set compression mode (0 - none, 1 - medium, 2 - heavy)', parseInt);
 
 program.parse(process.argv);
 

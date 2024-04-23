@@ -25,5 +25,6 @@ Options:
   -o, --output-directory <outputDirectory>  output directory
   -s, --scale <number>                      scale of output
   -wa, --without-alpha                      ignore alpha channel
+  -cm, --compression-mode                   set compression mode (0 - none, 1 - medium, 2 - heavy)
   -h, --help                                display help for command
 ```

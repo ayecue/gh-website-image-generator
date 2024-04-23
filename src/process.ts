@@ -1,4 +1,4 @@
-import { compress, OptimizedCodes } from './compress';
+import { compress, CompressionMode, OptimizedCodes } from './compress';
 import { ImageContainer } from './image-container';
 import { rgbToHex, rgbToHexWithAlpha } from './utils';
 
@@ -6,7 +6,8 @@ export const ImageAutoSize = -1;
 
 async function generateImageData(
   image: ImageContainer,
-  withoutAlpha: boolean
+  withoutAlpha: boolean,
+  compressionMode: CompressionMode
 ): Promise<string> {
   const output: string[] = [];
 
@@ -26,14 +27,14 @@ async function generateImageData(
       } else if (hex === '#FFFFFF') {
         code = OptimizedCodes.White;
       } else {
-        code = compress(hex);
+        code = compress(hex, compressionMode);
       }
     } else {
       hex = rgbToHexWithAlpha(red, green, blue, alpha);
       if (alpha === 0) {
         code = OptimizedCodes.Invisible;
       } else {
-        code = compress(hex);
+        code = compress(hex, compressionMode);
       }
     }
 
@@ -48,16 +49,22 @@ export interface ProcessOptions {
   width: number;
   height: number;
   withoutAlpha?: boolean;
+  compressionMode?: CompressionMode;
 }
 
 export async function process({
   image,
   width = 64,
   height = ImageAutoSize,
-  withoutAlpha = false
+  withoutAlpha = false,
+  compressionMode = CompressionMode.Medium
 }: ProcessOptions) {
   const resizedImage = await image.resize(width, height);
-  const output = await generateImageData(resizedImage, withoutAlpha);
+  const output = await generateImageData(
+    resizedImage,
+    withoutAlpha,
+    compressionMode
+  );
 
   return {
     image: resizedImage,
