@@ -35,149 +35,35 @@ function websiteLogicFactory(mode: CompressionMode) {
   switch (mode) {
     case CompressionMode.None: {
       return `
-        function next(i) {
-          const decompressed = data.slice(i, i + 8);
-          return '#' + decompressed;
-        }
-        function draw() {
-          let pointer = 0;
-          let index = 0;
-          const max = data.length;
-
-          while (pointer < max) {
-            let charVal = data[pointer];
-            let code = '';
-            if (charVal === "${OptimizedCodes.White}") {
-              code = '#FFFFFF';
-            } else if (charVal === "${OptimizedCodes.Black}") {
-              code = '#000000';
-            } else if (charVal == "${OptimizedCodes.Invisible}") {
-              code = '#00000000';
-            } else {
-              code = next(pointer);
-              pointer += 7;
-            }
-            pointer++;
-
-            const x = index % IMAGE_WIDTH;
-            const y = Math.floor(index / IMAGE_WIDTH);
-
-            ctx.fillStyle = code;
-            ctx.fillRect(x * PIXEL_SCALE, y * PIXEL_SCALE, PIXEL_SCALE, PIXEL_SCALE);
-
-            index++;
-          }
+        function next() {
+          const max = pointer + 8;
+          let out = "";
+          for (; pointer < max; pointer++) out += data[pointer];
+          return '#' + out;
         }
       `;
     }
     case CompressionMode.Medium: {
       return `
-        function decompress(segment) {
-          let out = "";
-          for (let i = 0; i < segment.length; i++) {
-            const item = segment[i];
-            let val = item.charCodeAt(0) - 100;
-            let temp = "";
-            for (let j = 0; j < 2; j++) {
-              temp = CHARACTERS[val % 16] + temp;
-              val = Math.floor(val / 16);
-            }
-            out = out + temp;
-          }
-          return out;
-        }
-        function next(i) {
-          const decompressed = decompress(data.slice(i, i + 4));
+        function next() {
+          const decompressed = decompress(4, 2);
           const r = decompressed[0] + decompressed[1];
           const g = decompressed[2] + decompressed[3];
           const b = decompressed[4] + decompressed[5];
           const a = decompressed[6] + decompressed[7];
           return '#' + r + g + b + a;
         }
-        function draw() {
-          let pointer = 0;
-          let index = 0;
-          const max = data.length;
-
-          while (pointer < max) {
-            let charVal = data[pointer];
-            let code = '';
-            if (charVal === "${OptimizedCodes.White}") {
-              code = '#FFFFFF';
-            } else if (charVal === "${OptimizedCodes.Black}") {
-              code = '#000000';
-            } else if (charVal == "${OptimizedCodes.Invisible}") {
-              code = '#00000000';
-            } else {
-              code = next(pointer);
-              pointer += 3;
-            }
-            pointer++;
-
-            const x = index % IMAGE_WIDTH;
-            const y = Math.floor(index / IMAGE_WIDTH);
-
-            ctx.fillStyle = code;
-            ctx.fillRect(x * PIXEL_SCALE, y * PIXEL_SCALE, PIXEL_SCALE, PIXEL_SCALE);
-
-            index++;
-          }
-        }
       `;
     }
     case CompressionMode.Heavy: {
       return `
-        function decompress(segment) {
-          let out = "";
-          for (let i = 0; i < segment.length; i++) {
-            const item = segment[i];
-            let val = item.charCodeAt(0) - 100;
-            let temp = "";
-            for (let j = 0; j < 3; j++) {
-              temp = CHARACTERS[val % 16] + temp;
-              val = Math.floor(val / 16);
-            }
-            out = out + temp;
-          }
-          return out;
-        }
-        function next(i) {
-          const decompressed = decompress(data.slice(i, i + 3));
+        function next() {
+          const decompressed = decompress(3, 3);
           const r = decompressed[0] + decompressed[1];
           const g = decompressed[2] + decompressed[3];
           const b = decompressed[4] + decompressed[5];
           const a = decompressed[7] + decompressed[8];
           return '#' + r + g + b + a;
-        }
-        function draw() {
-          let pointer = 0;
-          let index = 0;
-          const max = data.length;
-
-          while (pointer < max) {
-            let charVal = data[pointer];
-            let code = '';
-
-            const x = index % IMAGE_WIDTH;
-            const y = Math.floor(index / IMAGE_WIDTH);
-
-            if (charVal === "${OptimizedCodes.White}") {
-              code = '#FFFFFF';
-            } else if (charVal === "${OptimizedCodes.Black}") {
-              code = '#000000';
-            } else if (charVal == "${OptimizedCodes.Invisible}") {
-              code = '#00000000';
-            } else {
-              code = next(pointer);
-              pointer += 2;
-            }
-            pointer++;
-
-            ctx.fillStyle = code;
-            ctx.fillRect(x * PIXEL_SCALE, y * PIXEL_SCALE, PIXEL_SCALE, PIXEL_SCALE);
-
-            index++;
-          }
         }
       `;
     }
@@ -201,9 +87,57 @@ export function coreWebsiteFactory(
       const IMAGE_WIDTH = ${width};
       const PIXEL_SCALE = ${scale};
       const CHARACTERS = "0123456789abcdef";
+      let pointer;
 
       const canvas = document.getElementById('canvas');
       const ctx = canvas.context2D || canvas.getContext('2d');
+
+      function decompress(offset, size) {
+        const max = pointer + offset;
+        let out = "";
+        for (; pointer < max; pointer++) {
+          const item = data[pointer];
+          let val = item.charCodeAt(0) - 100;
+          let temp = "";
+          for (let j = 0; j < size; j++) {
+            temp = CHARACTERS[val % 16] + temp;
+            val = Math.floor(val / 16);
+          }
+          out = out + temp;
+        }
+        return out;
+      }
+      function draw() {
+        pointer = 0;
+        let index = 0;
+        const max = data.length;
+
+        while (pointer < max) {
+          let charVal = data[pointer];
+          let code = '';
+
+          const x = index % IMAGE_WIDTH;
+          const y = Math.floor(index / IMAGE_WIDTH);
+
+          if (charVal === "${OptimizedCodes.White}") {
+            code = '#FFFFFF';
+            pointer++;
+          } else if (charVal === "${OptimizedCodes.Black}") {
+            code = '#000000';
+            pointer++;
+          } else if (charVal == "${OptimizedCodes.Invisible}") {
+            code = '#00000000';
+            pointer++;
+          } else {
+            code = next();
+          }
+
+          ctx.fillStyle = code;
+          ctx.fillRect(x * PIXEL_SCALE, y * PIXEL_SCALE, PIXEL_SCALE, PIXEL_SCALE);
+
+          index++;
+        }
+      }
 
       ${websiteLogicFactory(compressionMode)}
 
