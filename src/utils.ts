@@ -141,11 +141,11 @@ export function coreWebsiteFactory(
 
       ${websiteLogicFactory(compressionMode)}
 
-      draw();
+      setTimeout(draw, 1);
     })(DATA);
   </script>`
     .split('\n')
-    .filter((s) => s !== '')
     .map((s) => s.trim())
-    .join('\n');
+    .filter((s) => s !== '')
+    .join('');
 }
