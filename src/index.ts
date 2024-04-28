@@ -33,8 +33,11 @@ export async function transform({ filepath, ...options }: TransformOptions) {
     coreWebsiteFactory(
       result.image.height,
       result.image.width,
-      options.scale,
-      options.compressionMode
+      {
+        scale: options.scale,
+        compressionMode: options.compressionMode,
+        withoutAlpha: options.withoutAlpha
+      }
     )
   ].join('\n');
 }

@@ -27,14 +27,14 @@ async function generateImageData(
       } else if (hex === '#FFFFFF') {
         code = OptimizedCodes.White;
       } else {
-        code = compress(hex, compressionMode);
+        code = compress(hex, compressionMode, withoutAlpha);
       }
     } else {
       hex = rgbToHexWithAlpha(red, green, blue, alpha);
       if (alpha === 0) {
         code = OptimizedCodes.Invisible;
       } else {
-        code = compress(hex, compressionMode);
+        code = compress(hex, compressionMode, withoutAlpha);
       }
     }
 

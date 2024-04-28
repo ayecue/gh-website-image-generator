@@ -31,12 +31,12 @@ export function rgbToHexWithAlpha(r: number, g: number, b: number, a: number) {
   return `${rgbToHex(r, g, b)}${rbgValueToHexValue(a)}`;
 }
 
-function websiteLogicFactory(mode: CompressionMode) {
+function websiteLogicFactory(mode: CompressionMode, withoutAlpha: boolean) {
   switch (mode) {
     case CompressionMode.None: {
       return `
         function next() {
-          const max = pointer + 8;
+          const max = pointer + ${withoutAlpha ? 6 : 8};
           let out = "";
           for (; pointer < max; pointer++) out += data[pointer];
           return '#' + out;
@@ -46,11 +46,11 @@ function websiteLogicFactory(mode: CompressionMode) {
     case CompressionMode.Medium: {
       return `
         function next() {
-          const decompressed = decompress(4, 2);
+          const decompressed = decompress(${withoutAlpha ? 3 : 4}, 2);
           const r = decompressed[0] + decompressed[1];
           const g = decompressed[2] + decompressed[3];
           const b = decompressed[4] + decompressed[5];
-          const a = decompressed[6] + decompressed[7];
+          ${withoutAlpha ? 'const a = "FF";' : 'const a = decompressed[6] + decompressed[7];'}
           return '#' + r + g + b + a;
         }
       `;
@@ -58,11 +58,11 @@ function websiteLogicFactory(mode: CompressionMode) {
     case CompressionMode.Heavy: {
       return `
         function next() {
-          const decompressed = decompress(3, 3);
+          const decompressed = decompress(${withoutAlpha ? 2 : 3}, 3);
           const r = decompressed[0] + decompressed[1];
           const g = decompressed[2] + decompressed[3];
           const b = decompressed[4] + decompressed[5];
-          const a = decompressed[7] + decompressed[8];
+          ${withoutAlpha ? 'const a = "FF";' : 'const a = decompressed[7] + decompressed[8];'}
           return '#' + r + g + b + a;
         }
       `;
@@ -73,11 +73,20 @@ function websiteLogicFactory(mode: CompressionMode) {
   }
 }
 
+export interface WebsiteOptions {
+  scale?: number;
+  withoutAlpha?: boolean;
+  compressionMode?: CompressionMode;
+}
+
 export function coreWebsiteFactory(
   height: number,
   width: number,
-  scale: number = 1,
-  compressionMode: CompressionMode = CompressionMode.Medium
+  {
+    scale = 1,
+    compressionMode = CompressionMode.Medium,
+    withoutAlpha = false
+  }: WebsiteOptions
 ) {
   return `<canvas id="canvas" width="${width * scale}" height="${
     height * scale
@@ -87,28 +96,29 @@ export function coreWebsiteFactory(
       const IMAGE_WIDTH = ${width};
       const PIXEL_SCALE = ${scale};
       const CHARACTERS = "0123456789abcdef";
-      let pointer;
 
       const canvas = document.getElementById('canvas');
       const ctx = canvas.context2D || canvas.getContext('2d');
 
-      function decompress(offset, size) {
-        const max = pointer + offset;
-        let out = "";
-        for (; pointer < max; pointer++) {
-          const item = data[pointer];
-          let val = item.charCodeAt(0) - 100;
-          let temp = "";
-          for (let j = 0; j < size; j++) {
-            temp = CHARACTERS[val % 16] + temp;
-            val = Math.floor(val / 16);
-          }
-          out = out + temp;
-        }
-        return out;
-      }
       function draw() {
-        pointer = 0;
+        ${websiteLogicFactory(compressionMode, withoutAlpha)}
+        function decompress(offset, size) {
+          const max = pointer + offset;
+          let out = "";
+          for (; pointer < max; pointer++) {
+            const item = data[pointer];
+            let val = item.charCodeAt(0) - 100;
+            let temp = "";
+            for (let j = 0; j < size; j++) {
+              temp = CHARACTERS[val % 16] + temp;
+              val = Math.floor(val / 16);
+            }
+            out = out + temp;
+          }
+          return out;
+        }
+
+        let pointer = 0;
         let index = 0;
         const max = data.length;
 
@@ -138,8 +148,6 @@ export function coreWebsiteFactory(
           index++;
         }
       }
-
-      ${websiteLogicFactory(compressionMode)}
 
       setTimeout(draw, 1);
     })(DATA);
