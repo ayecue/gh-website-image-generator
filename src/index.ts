@@ -1,12 +1,9 @@
+import crypto from 'crypto';
 import { readFileSync } from 'fs';
-import { decode, Image } from 'imagescript';
 import Jimp from 'jimp';
 
 import { CompressionMode } from './compress';
-import {
-  AnimatedImageContainer,
-  StaticImageContainer
-} from './image-container';
+import { StaticImageContainer } from './image-container';
 import { process } from './process';
 import { coreWebsiteFactory } from './utils';
 
@@ -17,6 +14,8 @@ export interface TransformOptions {
   scale?: number;
   withoutAlpha?: boolean;
   compressionMode?: CompressionMode;
+  asyncRendering?: boolean;
+  canvasId?: string;
 }
 
 export async function transform({ filepath, ...options }: TransformOptions) {
@@ -25,19 +24,17 @@ export async function transform({ filepath, ...options }: TransformOptions) {
     image: new StaticImageContainer(image),
     ...options
   });
+  const renderSessionID = crypto.randomBytes(4).toString('hex');
 
   return [
-    '<!DOCTYPE html>',
-    '<meta charset="UTF-8">',
-    `<script>var DATA="${result.data}";</script>`,
-    coreWebsiteFactory(
-      result.image.height,
-      result.image.width,
-      {
-        scale: options.scale,
-        compressionMode: options.compressionMode,
-        withoutAlpha: options.withoutAlpha
-      }
-    )
+    `<script>var DATA_${renderSessionID}="${result.data}";</script>`,
+    coreWebsiteFactory(result.image.height, result.image.width, {
+      scale: options.scale,
+      compressionMode: options.compressionMode,
+      withoutAlpha: options.withoutAlpha,
+      asyncRendering: options.asyncRendering,
+      canvasId: options.canvasId,
+      renderSessionID
+    })
   ].join('\n');
 }

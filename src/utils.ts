@@ -50,7 +50,11 @@ function websiteLogicFactory(mode: CompressionMode, withoutAlpha: boolean) {
           const r = decompressed[0] + decompressed[1];
           const g = decompressed[2] + decompressed[3];
           const b = decompressed[4] + decompressed[5];
-          ${withoutAlpha ? 'const a = "FF";' : 'const a = decompressed[6] + decompressed[7];'}
+          ${
+            withoutAlpha
+              ? 'const a = "FF";'
+              : 'const a = decompressed[6] + decompressed[7];'
+          }
           return '#' + r + g + b + a;
         }
       `;
@@ -62,7 +66,11 @@ function websiteLogicFactory(mode: CompressionMode, withoutAlpha: boolean) {
           const r = decompressed[0] + decompressed[1];
           const g = decompressed[2] + decompressed[3];
           const b = decompressed[4] + decompressed[5];
-          ${withoutAlpha ? 'const a = "FF";' : 'const a = decompressed[7] + decompressed[8];'}
+          ${
+            withoutAlpha
+              ? 'const a = "FF";'
+              : 'const a = decompressed[7] + decompressed[8];'
+          }
           return '#' + r + g + b + a;
         }
       `;
@@ -77,6 +85,9 @@ export interface WebsiteOptions {
   scale?: number;
   withoutAlpha?: boolean;
   compressionMode?: CompressionMode;
+  asyncRendering?: boolean;
+  canvasId?: string;
+  renderSessionID: string;
 }
 
 export function coreWebsiteFactory(
@@ -85,19 +96,26 @@ export function coreWebsiteFactory(
   {
     scale = 1,
     compressionMode = CompressionMode.Medium,
-    withoutAlpha = false
+    withoutAlpha = false,
+    asyncRendering = false,
+    canvasId,
+    renderSessionID
   }: WebsiteOptions
 ) {
-  return `<canvas id="canvas" width="${width * scale}" height="${
-    height * scale
-  }"></canvas>
+  return `${canvasId == null ? '<canvas id="canvas"></canvas>' : ''}
   <script>
     (function renderImage(data) {
       const IMAGE_WIDTH = ${width};
       const PIXEL_SCALE = ${scale};
       const CHARACTERS = "0123456789abcdef";
 
-      const canvas = document.getElementById('canvas');
+      const canvas = document.getElementById("${
+        canvasId != null ? canvasId : 'canvas'
+      }");
+
+      canvas.width = ${width * scale};
+      canvas.height = ${height * scale};
+
       const ctx = canvas.context2D || canvas.getContext('2d');
 
       function draw() {
@@ -149,8 +167,8 @@ export function coreWebsiteFactory(
         }
       }
 
-      setTimeout(draw, 1);
-    })(DATA);
+      ${!asyncRendering ? `draw();` : `setTimeout(draw, 1);`}
+    })(DATA_${renderSessionID});
   </script>`
     .split('\n')
     .map((s) => s.trim())

@@ -27,7 +27,9 @@ program
   .option('-s, --scale <number>', 'scale of output')
   .option('-o, --output-directory <outputDirectory>', 'output directory')
   .option('-wa, --without-alpha', 'ignore alpha channel')
-  .option('-cm, --compression-mode <number>', 'set compression mode (0 - none, 1 - medium, 2 - heavy)', parseInt);
+  .option('-cm, --compression-mode <number>', 'set compression mode (0 - none, 1 - medium, 2 - heavy)', parseInt)
+  .option('-ar, --async-rendering', 'use timeout for rendering')
+  .option('-id, --canvas-id <elementId>', 'define the element id of the canvas in which the image should be rendered');
 
 program.parse(process.argv);
 
