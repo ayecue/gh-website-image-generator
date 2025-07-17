@@ -26,7 +26,7 @@ Options:
   -id, --canvas-id <elementId>              define the element id of the canvas in which the image should be rendered
   -s, --scale <number>                      scale of output
   -wa, --without-alpha                      ignore alpha channel
-  -ar, --asnyc-rendering                    use setTimeout to trigger draw which makes it render async
+  -ar, --async-rendering                    use setTimeout to trigger draw which makes it render async
   -cm, --compression-mode                   set compression mode (0 - none, 1 - medium, 2 - heavy)
   -h, --help                                display help for command
 ```
